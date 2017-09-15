@@ -53,3 +53,41 @@ These two goals correspond to the following two chosen evaluation metrics change
 To launch the experiment, one should require to see **BOTH** decreased gross conversion **AND**
 increased or non-changed net conversion.
 
+## Measuring Standard Deviation
+
+Given a sample size of 5000 cookies visiting the course overview page
+
+Rough estimates of the baseline values for these metrics:
+
+| Metric Name                                          | Value     |
+|------------------------------------------------------|-----------|
+| Unique cookies to view course overview page per day  | 40000     |
+| Unique cookies to click "Start free trial" per day   | 3200      |
+| Enrollments per day                                  | 660       |
+| Click-through-probability on "Start free trial"      | 0.08      |
+| Probability of enrolling, given click                | 0.20625   |
+| Probability of payment, given enroll                 | 0.53      |
+| Probability of payment, given click                  | 0.1093125 |
+
+```{r}
+binomSD <- function(p, n) {
+  return(sqrt(p * (1-p) / n))
+}
+```
+
+```{r}
+# Number of clicks for the given sample
+n_clicks = 5000 * (3200 / 40000)
+# Gross conversion
+p_gross_conversion = 0.20625
+binomSD(p_gross_conversion, n_clicks)
+```
+Gross conversion standard deviation: 0.0202. The analytic estimate would be comparable to the empirical variability, because the unit of diversion and the unit of analysis are the same: a cookie.
+
+```{r}
+# Net conversion
+p_net_conversion = 0.1093125
+binomSD(p_net_conversion, n_clicks)
+```
+Net conversion standard deviation: 0.0156. The analytic estimate would be comparable to the empirical variability, because the unit of diversion and the unit of analysis are the same: a cookie.
+

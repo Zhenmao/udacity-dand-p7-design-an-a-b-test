@@ -124,6 +124,7 @@ $(document).ready(function () {
 <li><a href="#introduction"><span class="toc-section-number">1</span> Introduction</a></li>
 <li><a href="#experiment-design"><span class="toc-section-number">2</span> Experiment Design</a><ul>
 <li><a href="#metric-choice"><span class="toc-section-number">2.1</span> Metric Choice</a></li>
+<li><a href="#measuring-standard-deviation"><span class="toc-section-number">2.2</span> Measuring Standard Deviation</a></li>
 </ul></li>
 </ul>
 </div>
@@ -166,6 +167,64 @@ $(document).ready(function () {
 <li>Increase or non-changed net conversion.</li>
 </ol>
 <p>To launch the experiment, one should require to see <strong>BOTH</strong> decreased gross conversion <strong>AND</strong> increased or non-changed net conversion.</p>
+</div>
+<div id="measuring-standard-deviation" class="section level2">
+<h2><span class="header-section-number">2.2</span> Measuring Standard Deviation</h2>
+<p>Given a sample size of 5000 cookies visiting the course overview page</p>
+<p>Rough estimates of the baseline values for these metrics:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Unique cookies to view course overview page per day</td>
+<td>40000</td>
+</tr>
+<tr class="even">
+<td>Unique cookies to click “Start free trial” per day</td>
+<td>3200</td>
+</tr>
+<tr class="odd">
+<td>Enrollments per day</td>
+<td>660</td>
+</tr>
+<tr class="even">
+<td>Click-through-probability on “Start free trial”</td>
+<td>0.08</td>
+</tr>
+<tr class="odd">
+<td>Probability of enrolling, given click</td>
+<td>0.20625</td>
+</tr>
+<tr class="even">
+<td>Probability of payment, given enroll</td>
+<td>0.53</td>
+</tr>
+<tr class="odd">
+<td>Probability of payment, given click</td>
+<td>0.1093125</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>binomSD &lt;- function(p, n) {
+  return(sqrt(p * (1-p) / n))
+}</code></pre>
+<pre class="r"><code># Number of clicks for the given sample
+n_clicks = 5000 * (3200 / 40000)
+# Gross conversion
+p_gross_conversion = 0.20625
+binomSD(p_gross_conversion, n_clicks)</code></pre>
+<pre><code>## [1] 0.0202306</code></pre>
+<p>Gross conversion standard deviation: 0.0202. The analytic estimate would be comparable to the empirical variability, because the unit of diversion and the unit of analysis are the same: a cookie.</p>
+<pre class="r"><code># Net conversion
+p_net_conversion = 0.1093125
+binomSD(p_net_conversion, n_clicks)</code></pre>
+<pre><code>## [1] 0.01560154</code></pre>
+<p>Net conversion standard deviation: 0.0156. The analytic estimate would be comparable to the empirical variability, because the unit of diversion and the unit of analysis are the same: a cookie.</p>
 </div>
 </div>
 
