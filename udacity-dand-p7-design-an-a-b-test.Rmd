@@ -6,6 +6,10 @@ output:
     self_contained: no
     toc: yes
 ---
+
+```{r, message=FALSE, packages}
+```
+
 # Introduction
 
 At the time of this experiment, Udacity courses currently have two options on the course overview page: "start free trial", and "access course materials". If the student clicks "start free trial", they will be asked to enter their credit card information, and then they will be enrolled in a free trial for the paid version of the course. After 14 days, they will automatically be charged unless they cancel first. If the student clicks "access course materials", they will be able to view the videos and take the quizzes for free, but they will not receive coaching support or a verified certificate, and they will not submit their final project for feedback.
@@ -16,5 +20,36 @@ The hypothesis was that this might set clearer expectations for students upfront
 
 The unit of diversion is a cookie, although if the student enrolls in the free trial, they are tracked by user-id from that point forward. The same user-id cannot enroll in the free trial twice. For users that do not enroll, their user-id is not tracked in the experiment, even if they were signed in when they visited the course overview page.
 
-```{r, message=FALSE, packages}
-```
+# Experiment Design
+
+## Metric Choice
+
+**Invariant Metrics**:
+
+* **Number of cookies**: The number of unique cookies to view the course overview page (# cookies) should be an invariant metric. This step happens before the free trial screener step. Therefore, the number of cookies should not change across the experiment group and the control group.
+* **Number of clicks**: The number of unique cookies to click the "Start free trial” button (# clicks) should be an invariant metric. This step happens before the free trial screener step. Therefore, the number of clicks should not change across the experiment group and the control group.
+* **Click-through-probability**: The number of unique cookies to click the "Start free trial" button (# clicks) divided by number of unique cookies to view the course overview page (# cookies) should be an invariant metric. Because both the numerator (# clicks) and the denominator (# cookies) do not change, the ratio (click-through-probability) should also not change across the experiment group and the control group.
+
+**Evaluation Metrics**:
+
+* **Gross conversion**: The number of user-ids to complete checkout and enroll in the free trial (# user-ids) divided by number of unique cookies to click the "Start free trial” button (# clicks) should be an evaluation metric. The added time survey step should steer away users who do not have enough time for studying, and decrease the # trial user-ids. Because the numerator (# user-ids) should decrease and the denominator (# clicks) should be invariant, the ratio (gross conversion) should decrease for the experiment group.
+* **Net conversion**: The number of user-ids to remain enrolled past the 14-day boundary (# remained user-ids) divided by the number of unique cookies to click the "Start free trial” button (# clicks) should be an evaluation metric. The numerator (# remained user-ids) is expected to be higher in experiment group as a result of increased overall experience, and the denominator (# clicks) should be invariant, therefore the ratio (net conversion) should be higher in the experiment group.
+
+**Metrics Not Chosen**:
+
+* **Number of user-ids**: The number of users who enroll in the free trial (# user-ids) is not chosen as included metrics. Although # trial user-ids is expected to be reduced in the experiment group according to our hypothesis, we cannot guarantee that equal number of cookies are assigned into experiment and control group. This limitation makes the # trial user-ids less suitable to be used as an evaluation metric compared to a normalized metric such as gross conversion.
+* **Retention**: The number of user-ids to remain enrolled past the 14-day boundary (# remained user-ids) divided by number of user-ids to complete checkout (# user-ids) was initially chosen as evaluation metrics. The retention is expected to be higher in the experiment group as a result of increased overall experience. However, after calculating the duration that needed for testing this metric, the duration is too long to be practical running this experiment. Therefore, retention is not chosen for the final experiment design.
+
+In order to launch the experiment, the experiment results need to align with the two goals:
+
+1. Reduce the number of frustrated students who left the free trial because they didn't have enough time.
+2. Do not significantly reduce the number of students to continue past the free trial and eventually complete the course.
+
+These two goals correspond to the following two chosen evaluation metrics changes:
+
+1. Decreased gross conversion.
+2. Increase or non-changed net conversion.
+
+To launch the experiment, one should require to see **BOTH** decreased gross conversion **AND**
+increased or non-changed net conversion.
+
