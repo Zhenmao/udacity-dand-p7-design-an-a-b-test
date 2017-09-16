@@ -125,6 +125,10 @@ $(document).ready(function () {
 <li><a href="#experiment-design"><span class="toc-section-number">2</span> Experiment Design</a><ul>
 <li><a href="#metric-choice"><span class="toc-section-number">2.1</span> Metric Choice</a></li>
 <li><a href="#measuring-standard-deviation"><span class="toc-section-number">2.2</span> Measuring Standard Deviation</a></li>
+<li><a href="#sizing"><span class="toc-section-number">2.3</span> Sizing</a><ul>
+<li><a href="#number-of-samples-vs.power"><span class="toc-section-number">2.3.1</span> Number of Samples vs. Power</a></li>
+<li><a href="#choosing-duration-vs.exposure"><span class="toc-section-number">2.3.2</span> Choosing Duration vs. Exposure</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </div>
@@ -225,6 +229,83 @@ p_net_conversion = 0.1093125
 binomSD(p_net_conversion, n_clicks)</code></pre>
 <pre><code>## [1] 0.01560154</code></pre>
 <p>Net conversion standard deviation: 0.0156. The analytic estimate would be comparable to the empirical variability, because the unit of diversion and the unit of analysis are the same: a cookie.</p>
+</div>
+<div id="sizing" class="section level2">
+<h2><span class="header-section-number">2.3</span> Sizing</h2>
+<div id="number-of-samples-vs.power" class="section level3">
+<h3><span class="header-section-number">2.3.1</span> Number of Samples vs. Power</h3>
+<pre class="r"><code>## Strategy: For a bunch of Ns, compute the z_star by achieving desired alpha, then
+## compute what beta would be for that N using the acquired z_star. 
+## Pick the smallest N at which beta crosses the desired value
+
+# Inputs:
+#   The desired alpha for a two-tailed test
+# Returns: The z-critical value
+get_z_star = function(alpha) {
+    return(-qnorm(alpha / 2))
+}
+
+# Inputs:
+#   z-star: The z-critical value
+#   s: The standard error of the metric at N=1
+#   d_min: The practical significance level
+#   N: The sample size of each group of the experiment
+# Returns: The beta value of the two-tailed test
+get_beta = function(z_star, s, d_min, N) {
+    SE = s /  sqrt(N)
+    return(pnorm(z_star * SE, mean=d_min, sd=SE))
+}
+
+# Inputs:
+#   s: The standard error of the metric with N=1 in each group
+#   d_min: The practical significance level
+#   Ns: The sample sizes to try
+#   alpha: The desired alpha level of the test
+#   beta: The desired beta level of the test
+# Returns: The smallest N out of the given Ns that will achieve the desired
+#          beta. There should be at least N samples in each group of the experiment.
+#          If none of the given Ns will work, returns -1. N is the number of
+#          samples in each group.
+
+required_size = function(s, d_min, Ns=1:20000, alpha=0.05, beta=0.2) {
+    for (N in Ns) {
+        if (get_beta(get_z_star(alpha), s, d_min, N) &lt;= beta) {
+            return(N)
+        }
+    }
+    
+    return(-1)
+}</code></pre>
+<p>I will not use the Bonferroni correction during my analysis. Use an alpha of 0.05 and a beta of 0.2.</p>
+<p>For dectecing gross conversion difference of the practical significance boundary <span class="math inline">\(d_\text{min}=0.01\)</span>, the required number of pageviews is 642475:</p>
+<pre class="r"><code># Required sample size for gross conversion
+pageviews_gross_conversion = required_size(s=sqrt(0.20625*(1-0.20625)*2), d_min=0.01, alpha=0.05, Ns=1:1000000)*(40000/3200)*2
+pageviews_gross_conversion</code></pre>
+<pre><code>## [1] 642475</code></pre>
+<p>For detecting net conversion difference reaches the practical significance boundary <span class="math inline">\(d_\text{min}=0.0075\)</span>, the required number of pageviews is 679300:</p>
+<pre class="r"><code># Required smaple size for net conversion
+pageviews_net_conversion = required_size(s=sqrt(0.1093125*(1-0.1093125)*2), d_min=0.0075,  alpha=0.05, Ns=1:1000000)*(40000/3200)*2
+pageviews_net_conversion</code></pre>
+<pre><code>## [1] 679300</code></pre>
+<p>Because the experiment needs to be powerful enough to detect both metrics reaching practical significance boundaries, I need <strong>679300</strong> pageviews in total to collect to adequately power the experiment.</p>
+<pre class="r"><code>pageviews_required = max(pageviews_gross_conversion, pageviews_net_conversion)
+pageviews_required</code></pre>
+<pre><code>## [1] 679300</code></pre>
+</div>
+<div id="choosing-duration-vs.exposure" class="section level3">
+<h3><span class="header-section-number">2.3.2</span> Choosing Duration vs. Exposure</h3>
+<p>I think this experiment is of low risk and the number of page views needed is fairly large, therefore diverting all traffic to the experiment can help finish the experiment in a timely fashion in <strong>17</strong> days.</p>
+<pre class="r"><code># Number of days needed if diverting all traffic to the experiment
+duration = ceiling(pageviews_required / 40000)
+duration</code></pre>
+<pre><code>## [1] 17</code></pre>
+<p>The risk of the experiment is low, because:</p>
+<ol style="list-style-type: decimal">
+<li>The free trial screener is only one added small step that does not affect other existing pages. Even if the experiment fails and the free trial screener will not roll out, it will not affect the users in the experiment group in the future.</li>
+<li>The additional data collected–how much time they have available to devote to the course–is not sensitive. And no any other sensitive information is collected.</li>
+<li>The experiment will not harm the participants in any way.</li>
+</ol>
+</div>
 </div>
 </div>
 

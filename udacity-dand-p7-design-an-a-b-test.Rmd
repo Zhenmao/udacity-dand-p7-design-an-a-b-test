@@ -91,3 +91,88 @@ binomSD(p_net_conversion, n_clicks)
 ```
 Net conversion standard deviation: 0.0156. The analytic estimate would be comparable to the empirical variability, because the unit of diversion and the unit of analysis are the same: a cookie.
 
+## Sizing
+
+### Number of Samples vs. Power
+```{r, required_sample_size}
+## Strategy: For a bunch of Ns, compute the z_star by achieving desired alpha, then
+## compute what beta would be for that N using the acquired z_star. 
+## Pick the smallest N at which beta crosses the desired value
+
+# Inputs:
+#   The desired alpha for a two-tailed test
+# Returns: The z-critical value
+get_z_star = function(alpha) {
+    return(-qnorm(alpha / 2))
+}
+
+# Inputs:
+#   z-star: The z-critical value
+#   s: The standard error of the metric at N=1
+#   d_min: The practical significance level
+#   N: The sample size of each group of the experiment
+# Returns: The beta value of the two-tailed test
+get_beta = function(z_star, s, d_min, N) {
+    SE = s /  sqrt(N)
+    return(pnorm(z_star * SE, mean=d_min, sd=SE))
+}
+
+# Inputs:
+#   s: The standard error of the metric with N=1 in each group
+#   d_min: The practical significance level
+#   Ns: The sample sizes to try
+#   alpha: The desired alpha level of the test
+#   beta: The desired beta level of the test
+# Returns: The smallest N out of the given Ns that will achieve the desired
+#          beta. There should be at least N samples in each group of the experiment.
+#          If none of the given Ns will work, returns -1. N is the number of
+#          samples in each group.
+
+required_size = function(s, d_min, Ns=1:20000, alpha=0.05, beta=0.2) {
+    for (N in Ns) {
+        if (get_beta(get_z_star(alpha), s, d_min, N) <= beta) {
+            return(N)
+        }
+    }
+    
+    return(-1)
+}
+```
+
+I will not use the Bonferroni correction during my analysis. Use an alpha of 0.05 and a beta of 0.2.
+
+For dectecing gross conversion difference of the practical significance boundary $d_\text{min}=0.01$, the required number of pageviews is 642475:
+```{r}
+# Required sample size for gross conversion
+pageviews_gross_conversion = required_size(s=sqrt(0.20625*(1-0.20625)*2), d_min=0.01, alpha=0.05, Ns=1:1000000)*(40000/3200)*2
+pageviews_gross_conversion
+```
+
+For detecting net conversion difference reaches the practical significance boundary $d_\text{min}=0.0075$, the required number of pageviews is 679300:
+```{r}
+# Required smaple size for net conversion
+pageviews_net_conversion = required_size(s=sqrt(0.1093125*(1-0.1093125)*2), d_min=0.0075,  alpha=0.05, Ns=1:1000000)*(40000/3200)*2
+pageviews_net_conversion
+```
+
+Because the experiment needs to be powerful enough to detect both metrics reaching practical significance boundaries, I need **679300** pageviews in total to collect to adequately power the experiment.
+```{r}
+pageviews_required = max(pageviews_gross_conversion, pageviews_net_conversion)
+pageviews_required
+```
+
+
+### Choosing Duration vs. Exposure
+
+I think this experiment is of low risk and the number of page views needed is fairly large, therefore diverting all traffic to the experiment can help finish the experiment in a timely fashion in **17** days.
+```{r}
+# Number of days needed if diverting all traffic to the experiment
+duration = ceiling(pageviews_required / 40000)
+duration
+```
+
+The risk of the experiment is low, because:
+
+1. The free trial screener is only one added small step that does not affect other existing pages. Even if the experiment fails and the free trial screener will not roll out, it will not affect the users in the experiment group in the future.
+2. The additional data collected--how much time they have available to devote to the course--is not sensitive. And no any other sensitive information is collected.
+3. The experiment will not harm the participants in any way.
