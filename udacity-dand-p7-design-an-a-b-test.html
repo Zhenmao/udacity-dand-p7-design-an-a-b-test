@@ -132,6 +132,10 @@ $(document).ready(function () {
 </ul></li>
 <li><a href="#experiment-analysis"><span class="toc-section-number">3</span> Experiment Analysis</a><ul>
 <li><a href="#sanity-checks"><span class="toc-section-number">3.1</span> Sanity Checks</a></li>
+<li><a href="#result-analysis"><span class="toc-section-number">3.2</span> Result Analysis</a><ul>
+<li><a href="#effect-size-tests"><span class="toc-section-number">3.2.1</span> Effect Size Tests</a></li>
+<li><a href="#sign-tests"><span class="toc-section-number">3.2.2</span> Sign Tests</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </div>
@@ -360,6 +364,7 @@ ci_counts_fraction &lt;- function(var_control, var_experiment, alpha=0.05) {
 #   var_control_denominator: A dataframe column containing the control group data denominator
 #   var_experiment_numerator: A dataframe column containing the experiment group data numerator
 #   var_experiment_demoninator: A dataframe column containing the experiment group data denominator
+#   alpha: The desired alpha level
 # Returns: The 95% confidence interval for the expected proportion difference between groups
 ci_proportion_difference &lt;- function(var_control_numerator, var_control_denominator, var_experiment_numerator, var_experiment_demoninator, alpha=0.05) {
   p_pool &lt;- (sum(var_control_numerator) + sum(var_experiment_numerator)) / (sum(var_control_denominator) + sum(var_experiment_demoninator))
@@ -436,6 +441,150 @@ ci_click_through_probability</code></pre>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="result-analysis" class="section level2">
+<h2><span class="header-section-number">3.2</span> Result Analysis</h2>
+<div id="effect-size-tests" class="section level3">
+<h3><span class="header-section-number">3.2.1</span> Effect Size Tests</h3>
+<pre class="r"><code># Inputs:
+#   var_control_numerator: A dataframe column containing the control group data numerator
+#   var_control_denominator: A dataframe column containing the control group data denominator
+#   var_experiment_numerator: A dataframe column containing the experiment group data numerator
+#   var_experiment_demoninator: A dataframe column containing the experiment group data denominator
+#   alpha: The desired alpha level
+# Returns: The 95% confidence interval for the effective size of proportion difference between groups
+ci_effective_size &lt;- function(var_control_numerator, var_control_denominator, var_experiment_numerator, var_experiment_demoninator, alpha=0.05) {
+  p1 &lt;- sum(var_experiment_numerator) / sum(var_experiment_demoninator)
+  p2 &lt;- sum(var_control_numerator) / sum(var_control_denominator)
+  d &lt;- p1 - p2
+  z_star &lt;- get_z_star(alpha)
+  SE &lt;- sqrt(p1*(1-p1)/sum(var_experiment_demoninator) + p2*(1-p2)/sum(var_control_denominator))
+  return(c(d - z_star*SE, d + z_star*SE))
+}
+
+# Input:
+#   ci: The 95% confidence interval of evaluation metric
+# Returns: A bool value indicating whether the evaluation metric is statistically significant
+check_statistical_significance &lt;- function(ci) {
+  return(ci[1]&gt;0 | ci[2]&lt;0)
+}
+
+# Input:
+#   ci: The 95% confidence interval of evaluation metric
+#   dmin: The practical significane level
+# Returns: A bool value indicating whether the evaluation metric is statistically significant
+check_practical_significance &lt;- function(ci, dmin) {
+  return(ci[1]&gt;dmin | ci[2]&lt;(-dmin))
+}</code></pre>
+<p>Because both gross conversion and net conversion calculations use columns that contain rows with NA values, I will filter the data to contain only non-NA rows.</p>
+<pre class="r"><code>data_control_filtered &lt;- na.omit(data_control)
+data_experiment_filtered &lt;- na.omit(data_experiment)</code></pre>
+<p><strong>Gross conversion</strong></p>
+<pre class="r"><code>ci_gross_conversion &lt;- ci_effective_size(data_control_filtered[&#39;Enrollments&#39;], data_control_filtered[&#39;Clicks&#39;], data_experiment_filtered[&#39;Enrollments&#39;], data_experiment_filtered[&#39;Clicks&#39;])
+ci_gross_conversion</code></pre>
+<pre><code>## [1] -0.02912016 -0.01198959</code></pre>
+<pre class="r"><code>check_statistical_significance(ci_gross_conversion)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>check_practical_significance(ci_gross_conversion, 0.01)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p><strong>Net conversion</strong></p>
+<pre class="r"><code>ci_net_conversion &lt;- ci_effective_size(data_control_filtered[&#39;Payments&#39;], data_control_filtered[&#39;Clicks&#39;], data_experiment_filtered[&#39;Payments&#39;], data_experiment_filtered[&#39;Clicks&#39;])
+ci_net_conversion</code></pre>
+<pre><code>## [1] -0.011604186  0.001856741</code></pre>
+<pre class="r"><code>check_statistical_significance(ci_net_conversion)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code>check_practical_significance(ci_net_conversion, 0.0075)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<table>
+<colgroup>
+<col width="20%" />
+<col width="14%" />
+<col width="14%" />
+<col width="27%" />
+<col width="25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Evaluation Metric</th>
+<th>Lower Bound</th>
+<th>Upper Bound</th>
+<th>Statistical Significance</th>
+<th>Practical Significance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gross conversion</td>
+<td>-0.0291</td>
+<td>-0.0120</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Net conversion</td>
+<td>-0.0116</td>
+<td>0.0019</td>
+<td>No</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="sign-tests" class="section level3">
+<h3><span class="header-section-number">3.2.2</span> Sign Tests</h3>
+<pre class="r"><code># Inputs:
+#   var_control_numerator: A dataframe column containing the control group data numerator
+#   var_control_denominator: A dataframe column containing the control group data denominator
+#   var_experiment_numerator: A dataframe column containing the experiment group data numerator
+#   var_experiment_demoninator: A dataframe column containing the experiment group data denominator
+# Returns: Sign test result
+sign.test &lt;- function(var_control_numerator, var_control_denominator, var_experiment_numerator, var_experiment_demoninator) {
+  n_total &lt;- nrow(var_control_numerator)
+  n_success &lt;- sum(var_experiment_numerator/var_experiment_demoninator &gt; var_control_numerator/var_control_denominator)
+  return(binom.test(n_success, n_total)$p.value)
+}
+
+# Inputs:
+#   p_value: The p value of a given hypothesis test
+#   n_tails: 1: one-tailed; 2: two-tailed
+#   alpha: The desired alpha level of the test
+check_statistical_significance_wtih_p_value &lt;- function(p_value, n_tails=2, alpha=0.05) {
+  return(p_value&lt;alpha/n_tails)
+}</code></pre>
+<p><strong>Gross conversion</strong></p>
+<pre class="r"><code>p_value_gross_conversion &lt;- sign.test(data_control_filtered[&#39;Enrollments&#39;], data_control_filtered[&#39;Clicks&#39;], data_experiment_filtered[&#39;Enrollments&#39;], data_experiment_filtered[&#39;Clicks&#39;])
+p_value_gross_conversion</code></pre>
+<pre><code>## [1] 0.002599478</code></pre>
+<pre class="r"><code>check_statistical_significance_wtih_p_value(p_value_gross_conversion)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p><strong>Net conversion</strong></p>
+<pre class="r"><code>p_value_net_conversion &lt;- sign.test(data_control_filtered[&#39;Payments&#39;], data_control_filtered[&#39;Clicks&#39;], data_experiment_filtered[&#39;Payments&#39;], data_experiment_filtered[&#39;Clicks&#39;])
+p_value_net_conversion</code></pre>
+<pre><code>## [1] 0.6776395</code></pre>
+<pre class="r"><code>check_statistical_significance_wtih_p_value(p_value_net_conversion)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th>Evaluation Metric</th>
+<th>p-value</th>
+<th>Statistical Significance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gross conversion</td>
+<td>0.0026</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Net conversion</td>
+<td>0.6776</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 
