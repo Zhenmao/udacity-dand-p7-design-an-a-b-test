@@ -77,16 +77,16 @@ binomSD <- function(p, n) {
 
 ```{r}
 # Number of clicks for the given sample
-n_clicks = 5000 * (3200 / 40000)
+n_clicks <- 5000 * (3200 / 40000)
 # Gross conversion
-p_gross_conversion = 0.20625
+p_gross_conversion <- 0.20625
 binomSD(p_gross_conversion, n_clicks)
 ```
 Gross conversion standard deviation: 0.0202. The analytic estimate would be comparable to the empirical variability, because the unit of diversion and the unit of analysis are the same: a cookie.
 
 ```{r}
 # Net conversion
-p_net_conversion = 0.1093125
+p_net_conversion <- 0.1093125
 binomSD(p_net_conversion, n_clicks)
 ```
 Net conversion standard deviation: 0.0156. The analytic estimate would be comparable to the empirical variability, because the unit of diversion and the unit of analysis are the same: a cookie.
@@ -102,7 +102,7 @@ Net conversion standard deviation: 0.0156. The analytic estimate would be compar
 # Inputs:
 #   The desired alpha for a two-tailed test
 # Returns: The z-critical value
-get_z_star = function(alpha) {
+get_z_star <- function(alpha) {
     return(-qnorm(alpha / 2))
 }
 
@@ -112,8 +112,8 @@ get_z_star = function(alpha) {
 #   d_min: The practical significance level
 #   N: The sample size of each group of the experiment
 # Returns: The beta value of the two-tailed test
-get_beta = function(z_star, s, d_min, N) {
-    SE = s /  sqrt(N)
+get_beta <- function(z_star, s, d_min, N) {
+    SE <- s /  sqrt(N)
     return(pnorm(z_star * SE, mean=d_min, sd=SE))
 }
 
@@ -128,7 +128,7 @@ get_beta = function(z_star, s, d_min, N) {
 #          If none of the given Ns will work, returns -1. N is the number of
 #          samples in each group.
 
-required_size = function(s, d_min, Ns=1:20000, alpha=0.05, beta=0.2) {
+required_size <- function(s, d_min, Ns=1:20000, alpha=0.05, beta=0.2) {
     for (N in Ns) {
         if (get_beta(get_z_star(alpha), s, d_min, N) <= beta) {
             return(N)
@@ -144,20 +144,20 @@ I will not use the Bonferroni correction during my analysis. Use an alpha of 0.0
 For dectecing gross conversion difference of the practical significance boundary $d_\text{min}=0.01$, the required number of pageviews is 642475:
 ```{r}
 # Required sample size for gross conversion
-pageviews_gross_conversion = required_size(s=sqrt(0.20625*(1-0.20625)*2), d_min=0.01, alpha=0.05, Ns=1:1000000)*(40000/3200)*2
+pageviews_gross_conversion <- required_size(s=sqrt(0.20625*(1-0.20625)*2), d_min=0.01, alpha=0.05, Ns=1:1000000)*(40000/3200)*2
 pageviews_gross_conversion
 ```
 
 For detecting net conversion difference reaches the practical significance boundary $d_\text{min}=0.0075$, the required number of pageviews is 679300:
 ```{r}
 # Required smaple size for net conversion
-pageviews_net_conversion = required_size(s=sqrt(0.1093125*(1-0.1093125)*2), d_min=0.0075,  alpha=0.05, Ns=1:1000000)*(40000/3200)*2
+pageviews_net_conversion <- required_size(s=sqrt(0.1093125*(1-0.1093125)*2), d_min=0.0075,  alpha=0.05, Ns=1:1000000)*(40000/3200)*2
 pageviews_net_conversion
 ```
 
 Because the experiment needs to be powerful enough to detect both metrics reaching practical significance boundaries, I need **679300** pageviews in total to collect to adequately power the experiment.
 ```{r}
-pageviews_required = max(pageviews_gross_conversion, pageviews_net_conversion)
+pageviews_required <- max(pageviews_gross_conversion, pageviews_net_conversion)
 pageviews_required
 ```
 
@@ -167,7 +167,7 @@ pageviews_required
 I think this experiment is of low risk and the number of page views needed is fairly large, therefore diverting all traffic to the experiment can help finish the experiment in a timely fashion in **17** days.
 ```{r}
 # Number of days needed if diverting all traffic to the experiment
-duration = ceiling(pageviews_required / 40000)
+duration <- ceiling(pageviews_required / 40000)
 duration
 ```
 
@@ -176,3 +176,6 @@ The risk of the experiment is low, because:
 1. The free trial screener is only one added small step that does not affect other existing pages. Even if the experiment fails and the free trial screener will not roll out, it will not affect the users in the experiment group in the future.
 2. The additional data collected--how much time they have available to devote to the course--is not sensitive. And no any other sensitive information is collected.
 3. The experiment will not harm the participants in any way.
+
+# Experiment Analysis
+

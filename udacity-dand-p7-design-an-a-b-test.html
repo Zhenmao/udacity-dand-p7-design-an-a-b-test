@@ -130,6 +130,9 @@ $(document).ready(function () {
 <li><a href="#choosing-duration-vs.exposure"><span class="toc-section-number">2.3.2</span> Choosing Duration vs. Exposure</a></li>
 </ul></li>
 </ul></li>
+<li><a href="#experiment-analysis"><span class="toc-section-number">3</span> Experiment Analysis</a><ul>
+<li><a href="#sanity-checks"><span class="toc-section-number">3.1</span> Sanity Checks</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -306,6 +309,22 @@ duration</code></pre>
 <li>The experiment will not harm the participants in any way.</li>
 </ol>
 </div>
+</div>
+</div>
+<div id="experiment-analysis" class="section level1">
+<h1><span class="header-section-number">3</span> Experiment Analysis</h1>
+<div id="sanity-checks" class="section level2">
+<h2><span class="header-section-number">3.1</span> Sanity Checks</h2>
+<pre class="r"><code># Import csv data
+data_control &lt;- read.csv(&#39;data_control.csv&#39;, row.names=1)
+data_experiment &lt;- read.csv(&#39;data_experiment.csv&#39;, row.names=1)</code></pre>
+<p>The meaning of each column is:</p>
+<ul>
+<li>Pageviews: Number of unique cookies to view the course overview page that day.</li>
+<li>Clicks: Number of unique cookies to click the course overview page that day.</li>
+<li>Enrollments: Number of user-ids to enroll in the free trial that day.</li>
+<li>Payments: Number of user-ids who who enrolled on that day to remain enrolled for 14 days and thus make a payment.</li>
+</ul>
 </div>
 </div>
 
