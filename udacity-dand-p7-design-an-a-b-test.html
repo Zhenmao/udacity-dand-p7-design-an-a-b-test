@@ -221,14 +221,14 @@ $(document).ready(function () {
   return(sqrt(p * (1-p) / n))
 }</code></pre>
 <pre class="r"><code># Number of clicks for the given sample
-n_clicks = 5000 * (3200 / 40000)
+n_clicks &lt;- 5000 * (3200 / 40000)
 # Gross conversion
-p_gross_conversion = 0.20625
+p_gross_conversion &lt;- 0.20625
 binomSD(p_gross_conversion, n_clicks)</code></pre>
 <pre><code>## [1] 0.0202306</code></pre>
 <p>Gross conversion standard deviation: 0.0202. The analytic estimate would be comparable to the empirical variability, because the unit of diversion and the unit of analysis are the same: a cookie.</p>
 <pre class="r"><code># Net conversion
-p_net_conversion = 0.1093125
+p_net_conversion &lt;- 0.1093125
 binomSD(p_net_conversion, n_clicks)</code></pre>
 <pre><code>## [1] 0.01560154</code></pre>
 <p>Net conversion standard deviation: 0.0156. The analytic estimate would be comparable to the empirical variability, because the unit of diversion and the unit of analysis are the same: a cookie.</p>
@@ -244,7 +244,7 @@ binomSD(p_net_conversion, n_clicks)</code></pre>
 # Inputs:
 #   The desired alpha for a two-tailed test
 # Returns: The z-critical value
-get_z_star = function(alpha) {
+get_z_star &lt;- function(alpha) {
     return(-qnorm(alpha / 2))
 }
 
@@ -254,8 +254,8 @@ get_z_star = function(alpha) {
 #   d_min: The practical significance level
 #   N: The sample size of each group of the experiment
 # Returns: The beta value of the two-tailed test
-get_beta = function(z_star, s, d_min, N) {
-    SE = s /  sqrt(N)
+get_beta &lt;- function(z_star, s, d_min, N) {
+    SE &lt;- s /  sqrt(N)
     return(pnorm(z_star * SE, mean=d_min, sd=SE))
 }
 
@@ -270,7 +270,7 @@ get_beta = function(z_star, s, d_min, N) {
 #          If none of the given Ns will work, returns -1. N is the number of
 #          samples in each group.
 
-required_size = function(s, d_min, Ns=1:20000, alpha=0.05, beta=0.2) {
+required_size &lt;- function(s, d_min, Ns=1:20000, alpha=0.05, beta=0.2) {
     for (N in Ns) {
         if (get_beta(get_z_star(alpha), s, d_min, N) &lt;= beta) {
             return(N)
@@ -282,16 +282,16 @@ required_size = function(s, d_min, Ns=1:20000, alpha=0.05, beta=0.2) {
 <p>I will not use the Bonferroni correction during my analysis. Use an alpha of 0.05 and a beta of 0.2.</p>
 <p>For dectecing gross conversion difference of the practical significance boundary <span class="math inline">\(d_\text{min}=0.01\)</span>, the required number of pageviews is 642475:</p>
 <pre class="r"><code># Required sample size for gross conversion
-pageviews_gross_conversion = required_size(s=sqrt(0.20625*(1-0.20625)*2), d_min=0.01, alpha=0.05, Ns=1:1000000)*(40000/3200)*2
+pageviews_gross_conversion &lt;- required_size(s=sqrt(0.20625*(1-0.20625)*2), d_min=0.01, alpha=0.05, Ns=1:1000000)*(40000/3200)*2
 pageviews_gross_conversion</code></pre>
 <pre><code>## [1] 642475</code></pre>
 <p>For detecting net conversion difference reaches the practical significance boundary <span class="math inline">\(d_\text{min}=0.0075\)</span>, the required number of pageviews is 679300:</p>
 <pre class="r"><code># Required smaple size for net conversion
-pageviews_net_conversion = required_size(s=sqrt(0.1093125*(1-0.1093125)*2), d_min=0.0075,  alpha=0.05, Ns=1:1000000)*(40000/3200)*2
+pageviews_net_conversion &lt;- required_size(s=sqrt(0.1093125*(1-0.1093125)*2), d_min=0.0075,  alpha=0.05, Ns=1:1000000)*(40000/3200)*2
 pageviews_net_conversion</code></pre>
 <pre><code>## [1] 679300</code></pre>
 <p>Because the experiment needs to be powerful enough to detect both metrics reaching practical significance boundaries, I need <strong>679300</strong> pageviews in total to collect to adequately power the experiment.</p>
-<pre class="r"><code>pageviews_required = max(pageviews_gross_conversion, pageviews_net_conversion)
+<pre class="r"><code>pageviews_required &lt;- max(pageviews_gross_conversion, pageviews_net_conversion)
 pageviews_required</code></pre>
 <pre><code>## [1] 679300</code></pre>
 </div>
@@ -299,7 +299,7 @@ pageviews_required</code></pre>
 <h3><span class="header-section-number">2.3.2</span> Choosing Duration vs. Exposure</h3>
 <p>I think this experiment is of low risk and the number of page views needed is fairly large, therefore diverting all traffic to the experiment can help finish the experiment in a timely fashion in <strong>17</strong> days.</p>
 <pre class="r"><code># Number of days needed if diverting all traffic to the experiment
-duration = ceiling(pageviews_required / 40000)
+duration &lt;- ceiling(pageviews_required / 40000)
 duration</code></pre>
 <pre><code>## [1] 17</code></pre>
 <p>The risk of the experiment is low, because:</p>
@@ -325,6 +325,117 @@ data_experiment &lt;- read.csv(&#39;data_experiment.csv&#39;, row.names=1)</code
 <li>Enrollments: Number of user-ids to enroll in the free trial that day.</li>
 <li>Payments: Number of user-ids who who enrolled on that day to remain enrolled for 14 days and thus make a payment.</li>
 </ul>
+<pre class="r"><code># Inputs:
+#   var_control: A dataframe column containing the control group data
+#   var_experiment: A dataframe column containing the experiment group data
+# Returns: The observed fraction assgined to the control group 
+observed_counts_fraction &lt;- function(var_control, var_experiment) {
+  return(sum(var_control) / (sum(var_control) + sum(var_experiment)))
+}
+
+# Inputs:
+#   var_control_numerator: A dataframe column containing the control group data numerator
+#   var_control_denominator: A dataframe column containing the control group data denominator
+#   var_experiment_numerator: A dataframe column containing the experiment group data numerator
+#   var_experiment_demoninator: A dataframe column containing the experiment group data denominator
+# Returns: The observed proportion difference between groups
+observed_proportion_difference &lt;- function(var_control_numerator, var_control_denominator, var_experiment_numerator, var_experiment_demoninator) {
+  return(sum(var_experiment_numerator)/sum(var_experiment_demoninator) - sum(var_control_numerator)/sum(var_control_denominator))
+}
+
+# Inputs:
+#   var_control: A dataframe column containing the control group data
+#   var_experiment: A dataframe column containing the experiment group data
+#   alpha: The desired alpha level
+# Returns: The 95% confidence interval for the expected fraction assigned to the control group 
+ci_counts_fraction &lt;- function(var_control, var_experiment, alpha=0.05) {
+  p &lt;- 0.5
+  z_star &lt;- get_z_star(alpha)
+  SE &lt;- sqrt(p*(1-p) / (sum(var_control) + sum(var_experiment)))
+  return(c(p - z_star * SE, p + z_star * SE))
+}
+
+# Inputs:
+#   var_control_numerator: A dataframe column containing the control group data numerator
+#   var_control_denominator: A dataframe column containing the control group data denominator
+#   var_experiment_numerator: A dataframe column containing the experiment group data numerator
+#   var_experiment_demoninator: A dataframe column containing the experiment group data denominator
+# Returns: The 95% confidence interval for the expected proportion difference between groups
+ci_proportion_difference &lt;- function(var_control_numerator, var_control_denominator, var_experiment_numerator, var_experiment_demoninator, alpha=0.05) {
+  p_pool &lt;- (sum(var_control_numerator) + sum(var_experiment_numerator)) / (sum(var_control_denominator) + sum(var_experiment_demoninator))
+  z_star &lt;- get_z_star(alpha)
+  SE &lt;- sqrt(p_pool*(1-p_pool)*(1/sum(var_control_denominator) + 1/sum(var_experiment_demoninator)))
+  return(c(-z_star * SE, z_star * SE))
+}
+
+# Input:
+#   observed: The observed value
+#   ci: The 95% confidence interval
+# Returns: A bool value indicating whether passing sanity check
+pass_sanity_check &lt;- function(observed, ci) {
+  return(observed&gt;ci[1] &amp; observed&lt;ci[2])
+}</code></pre>
+<p><strong>Number of cookies</strong></p>
+<pre class="r"><code>observed_n_cookies &lt;- observed_counts_fraction(data_control[&#39;Pageviews&#39;], data_experiment[&#39;Pageviews&#39;])
+observed_n_cookies</code></pre>
+<pre><code>## [1] 0.5006397</code></pre>
+<pre class="r"><code>ci_n_cookies &lt;- ci_counts_fraction(data_control[&#39;Pageviews&#39;], data_experiment[&#39;Pageviews&#39;])
+ci_n_cookies</code></pre>
+<pre><code>## [1] 0.4988204 0.5011796</code></pre>
+<pre class="r"><code>pass_sanity_check(observed_n_cookies, ci_n_cookies)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p><strong>Number of clicks</strong></p>
+<pre class="r"><code>observed_n_clicks &lt;- observed_counts_fraction(data_control[&#39;Clicks&#39;], data_experiment[&#39;Clicks&#39;])
+observed_n_clicks</code></pre>
+<pre><code>## [1] 0.5004673</code></pre>
+<pre class="r"><code>ci_n_clicks &lt;- ci_counts_fraction(data_control[&#39;Clicks&#39;], data_experiment[&#39;Clicks&#39;])
+ci_n_clicks</code></pre>
+<pre><code>## [1] 0.4958846 0.5041154</code></pre>
+<pre class="r"><code>pass_sanity_check(observed_n_clicks, ci_n_clicks)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p><strong>Click-through-probability</strong></p>
+<pre class="r"><code>observed_click_through_probability &lt;- observed_proportion_difference(data_control[&#39;Clicks&#39;], data_control[&#39;Pageviews&#39;], data_experiment[&#39;Clicks&#39;], data_experiment[&#39;Pageviews&#39;])
+observed_click_through_probability</code></pre>
+<pre><code>## [1] 5.662709e-05</code></pre>
+<pre class="r"><code>ci_click_through_probability &lt;- ci_proportion_difference(data_control[&#39;Clicks&#39;], data_control[&#39;Pageviews&#39;], data_experiment[&#39;Clicks&#39;], data_experiment[&#39;Pageviews&#39;])
+ci_click_through_probability</code></pre>
+<pre><code>## [1] -0.001295655  0.001295655</code></pre>
+<pre class="r"><code>pass_sanity_check(observed_click_through_probability, ci_click_through_probability)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th>Invariant Metric</th>
+<th>Lower Bound</th>
+<th>Upper Bound</th>
+<th>Observed</th>
+<th>Passed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Number of cookies</td>
+<td>0.4988</td>
+<td>0.5012</td>
+<td>0.5006</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Number of clicks</td>
+<td>0.4959</td>
+<td>0.5041</td>
+<td>0.5005</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Click-through-probability</td>
+<td>-0.0013</td>
+<td>0.0013</td>
+<td>0.0001</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 

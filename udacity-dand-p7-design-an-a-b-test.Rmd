@@ -179,3 +179,115 @@ The risk of the experiment is low, because:
 
 # Experiment Analysis
 
+## Sanity Checks
+```{r}
+# Import csv data
+data_control <- read.csv('data_control.csv', row.names=1)
+data_experiment <- read.csv('data_experiment.csv', row.names=1)
+```
+The meaning of each column is:
+
+* Pageviews: Number of unique cookies to view the course overview page that day.
+* Clicks: Number of unique cookies to click the course overview page that day.
+* Enrollments: Number of user-ids to enroll in the free trial that day.
+* Payments: Number of user-ids who who enrolled on that day to remain enrolled for 14 days and thus make a payment.
+
+```{r}
+# Inputs:
+#   var_control: A dataframe column containing the control group data
+#   var_experiment: A dataframe column containing the experiment group data
+# Returns: The observed fraction assgined to the control group 
+observed_counts_fraction <- function(var_control, var_experiment) {
+  return(sum(var_control) / (sum(var_control) + sum(var_experiment)))
+}
+
+# Inputs:
+#   var_control_numerator: A dataframe column containing the control group data numerator
+#   var_control_denominator: A dataframe column containing the control group data denominator
+#   var_experiment_numerator: A dataframe column containing the experiment group data numerator
+#   var_experiment_demoninator: A dataframe column containing the experiment group data denominator
+# Returns: The observed proportion difference between groups
+observed_proportion_difference <- function(var_control_numerator, var_control_denominator, var_experiment_numerator, var_experiment_demoninator) {
+  return(sum(var_experiment_numerator)/sum(var_experiment_demoninator) - sum(var_control_numerator)/sum(var_control_denominator))
+}
+
+# Inputs:
+#   var_control: A dataframe column containing the control group data
+#   var_experiment: A dataframe column containing the experiment group data
+#   alpha: The desired alpha level
+# Returns: The 95% confidence interval for the expected fraction assigned to the control group 
+ci_counts_fraction <- function(var_control, var_experiment, alpha=0.05) {
+  p <- 0.5
+  z_star <- get_z_star(alpha)
+  SE <- sqrt(p*(1-p) / (sum(var_control) + sum(var_experiment)))
+  return(c(p - z_star * SE, p + z_star * SE))
+}
+
+# Inputs:
+#   var_control_numerator: A dataframe column containing the control group data numerator
+#   var_control_denominator: A dataframe column containing the control group data denominator
+#   var_experiment_numerator: A dataframe column containing the experiment group data numerator
+#   var_experiment_demoninator: A dataframe column containing the experiment group data denominator
+# Returns: The 95% confidence interval for the expected proportion difference between groups
+ci_proportion_difference <- function(var_control_numerator, var_control_denominator, var_experiment_numerator, var_experiment_demoninator, alpha=0.05) {
+  p_pool <- (sum(var_control_numerator) + sum(var_experiment_numerator)) / (sum(var_control_denominator) + sum(var_experiment_demoninator))
+  z_star <- get_z_star(alpha)
+  SE <- sqrt(p_pool*(1-p_pool)*(1/sum(var_control_denominator) + 1/sum(var_experiment_demoninator)))
+  return(c(-z_star * SE, z_star * SE))
+}
+
+# Input:
+#   observed: The observed value
+#   ci: The 95% confidence interval
+# Returns: A bool value indicating whether passing sanity check
+pass_sanity_check <- function(observed, ci) {
+  return(observed>ci[1] & observed<ci[2])
+}
+```
+
+**Number of cookies**
+
+```{r}
+observed_n_cookies <- observed_counts_fraction(data_control['Pageviews'], data_experiment['Pageviews'])
+observed_n_cookies
+```
+```{r}
+ci_n_cookies <- ci_counts_fraction(data_control['Pageviews'], data_experiment['Pageviews'])
+ci_n_cookies
+```
+```{r}
+pass_sanity_check(observed_n_cookies, ci_n_cookies)
+```
+
+**Number of clicks**
+```{r}
+observed_n_clicks <- observed_counts_fraction(data_control['Clicks'], data_experiment['Clicks'])
+observed_n_clicks
+```
+```{r}
+ci_n_clicks <- ci_counts_fraction(data_control['Clicks'], data_experiment['Clicks'])
+ci_n_clicks
+```
+```{r}
+pass_sanity_check(observed_n_clicks, ci_n_clicks)
+```
+
+**Click-through-probability**
+
+```{r}
+observed_click_through_probability <- observed_proportion_difference(data_control['Clicks'], data_control['Pageviews'], data_experiment['Clicks'], data_experiment['Pageviews'])
+observed_click_through_probability
+```
+```{r}
+ci_click_through_probability <- ci_proportion_difference(data_control['Clicks'], data_control['Pageviews'], data_experiment['Clicks'], data_experiment['Pageviews'])
+ci_click_through_probability
+```
+```{r}
+pass_sanity_check(observed_click_through_probability, ci_click_through_probability)
+```
+
+| Invariant Metric          | Lower Bound | Upper Bound | Observed | Passed |
+|---------------------------|-------------|-------------|----------|--------|
+| Number of cookies         | 0.4988      | 0.5012      | 0.5006   | Yes    |
+| Number of clicks          | 0.4959      | 0.5041      | 0.5005   | Yes    |
+| Click-through-probability | -0.0013     | 0.0013      | 0.0001   | Yes    |
