@@ -414,3 +414,14 @@ check_statistical_significance_wtih_p_value(p_value_net_conversion)
 |-------------------|---------|--------------------------|
 | Gross conversion  | 0.0026  | Yes                      |
 | Net conversion    | 0.6776  | No                       |
+
+### Summary
+
+I did not use the Bonferroni correction. The Bonferroni correction is useful to prevent false positives when there are many evaluation metrics. In this experiment, in order to be comfortable to launch the testing feature, we need to meet BOTH of the criteria:
+
+1. There is practically significant decrease of gross conversion in the experiment group.
+2. There is NO practically significant decrease of net conversion in the experiment group.
+
+Bonferroni correction is useful if I only require to meet ANY criteria in this experiment to launch the feature. Because I will launch the feature only when BOTH of the criteria are met, I do not need to use the Bonferroni correction.
+
+The effective size tests results agree with the sign tests results.

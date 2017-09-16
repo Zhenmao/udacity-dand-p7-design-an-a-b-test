@@ -135,6 +135,7 @@ $(document).ready(function () {
 <li><a href="#result-analysis"><span class="toc-section-number">3.2</span> Result Analysis</a><ul>
 <li><a href="#effect-size-tests"><span class="toc-section-number">3.2.1</span> Effect Size Tests</a></li>
 <li><a href="#sign-tests"><span class="toc-section-number">3.2.2</span> Sign Tests</a></li>
+<li><a href="#summary"><span class="toc-section-number">3.2.3</span> Summary</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -584,6 +585,16 @@ p_value_net_conversion</code></pre>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="summary" class="section level3">
+<h3><span class="header-section-number">3.2.3</span> Summary</h3>
+<p>I did not use the Bonferroni correction. The Bonferroni correction is useful to prevent false positives when there are many evaluation metrics. In this experiment, in order to be comfortable to launch the testing feature, we need to meet BOTH of the criteria:</p>
+<ol style="list-style-type: decimal">
+<li>There is practically significant decrease of gross conversion in the experiment group.</li>
+<li>There is NO practically significant decrease of net conversion in the experiment group.</li>
+</ol>
+<p>Bonferroni correction is useful if I only require to meet ANY criteria in this experiment to launch the feature. Because I will launch the feature only when BOTH of the criteria are met, I do not need to use the Bonferroni correction.</p>
+<p>The effective size tests results agree with the sign tests results.</p>
 </div>
 </div>
 </div>
