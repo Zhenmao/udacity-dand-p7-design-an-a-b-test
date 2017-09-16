@@ -382,28 +382,28 @@ pass_sanity_check &lt;- function(observed, ci) {
   return(observed&gt;ci[1] &amp; observed&lt;ci[2])
 }</code></pre>
 <p><strong>Number of cookies</strong></p>
-<pre class="r"><code>observed_n_cookies &lt;- observed_counts_fraction(data_control[&#39;Pageviews&#39;], data_experiment[&#39;Pageviews&#39;])
+<pre class="r"><code>observed_n_cookies &lt;- observed_counts_fraction(data_control$Pageviews, data_experiment$Pageviews)
 observed_n_cookies</code></pre>
 <pre><code>## [1] 0.5006397</code></pre>
-<pre class="r"><code>ci_n_cookies &lt;- ci_counts_fraction(data_control[&#39;Pageviews&#39;], data_experiment[&#39;Pageviews&#39;])
+<pre class="r"><code>ci_n_cookies &lt;- ci_counts_fraction(data_control$Pageviews, data_experiment$Pageviews)
 ci_n_cookies</code></pre>
 <pre><code>## [1] 0.4988204 0.5011796</code></pre>
 <pre class="r"><code>pass_sanity_check(observed_n_cookies, ci_n_cookies)</code></pre>
 <pre><code>## [1] TRUE</code></pre>
 <p><strong>Number of clicks</strong></p>
-<pre class="r"><code>observed_n_clicks &lt;- observed_counts_fraction(data_control[&#39;Clicks&#39;], data_experiment[&#39;Clicks&#39;])
+<pre class="r"><code>observed_n_clicks &lt;- observed_counts_fraction(data_control$Clicks, data_experiment$Clicks)
 observed_n_clicks</code></pre>
 <pre><code>## [1] 0.5004673</code></pre>
-<pre class="r"><code>ci_n_clicks &lt;- ci_counts_fraction(data_control[&#39;Clicks&#39;], data_experiment[&#39;Clicks&#39;])
+<pre class="r"><code>ci_n_clicks &lt;- ci_counts_fraction(data_control$Clicks, data_experiment$Clicks)
 ci_n_clicks</code></pre>
 <pre><code>## [1] 0.4958846 0.5041154</code></pre>
 <pre class="r"><code>pass_sanity_check(observed_n_clicks, ci_n_clicks)</code></pre>
 <pre><code>## [1] TRUE</code></pre>
 <p><strong>Click-through-probability</strong></p>
-<pre class="r"><code>observed_click_through_probability &lt;- observed_proportion_difference(data_control[&#39;Clicks&#39;], data_control[&#39;Pageviews&#39;], data_experiment[&#39;Clicks&#39;], data_experiment[&#39;Pageviews&#39;])
+<pre class="r"><code>observed_click_through_probability &lt;- observed_proportion_difference(data_control$Clicks, data_control$Pageviews, data_experiment$Clicks, data_experiment$Pageviews)
 observed_click_through_probability</code></pre>
 <pre><code>## [1] 5.662709e-05</code></pre>
-<pre class="r"><code>ci_click_through_probability &lt;- ci_proportion_difference(data_control[&#39;Clicks&#39;], data_control[&#39;Pageviews&#39;], data_experiment[&#39;Clicks&#39;], data_experiment[&#39;Pageviews&#39;])
+<pre class="r"><code>ci_click_through_probability &lt;- ci_proportion_difference(data_control$Clicks, data_control$Pageviews, data_experiment$Clicks, data_experiment$Pageviews)
 ci_click_through_probability</code></pre>
 <pre><code>## [1] -0.001295655  0.001295655</code></pre>
 <pre class="r"><code>pass_sanity_check(observed_click_through_probability, ci_click_through_probability)</code></pre>
@@ -481,7 +481,7 @@ check_practical_significance &lt;- function(ci, dmin) {
 <pre class="r"><code>data_control_filtered &lt;- na.omit(data_control)
 data_experiment_filtered &lt;- na.omit(data_experiment)</code></pre>
 <p><strong>Gross conversion</strong></p>
-<pre class="r"><code>ci_gross_conversion &lt;- ci_effective_size(data_control_filtered[&#39;Enrollments&#39;], data_control_filtered[&#39;Clicks&#39;], data_experiment_filtered[&#39;Enrollments&#39;], data_experiment_filtered[&#39;Clicks&#39;])
+<pre class="r"><code>ci_gross_conversion &lt;- ci_effective_size(data_control_filtered$Enrollments, data_control_filtered$Clicks, data_experiment_filtered$Enrollments, data_experiment_filtered$Clicks)
 ci_gross_conversion</code></pre>
 <pre><code>## [1] -0.02912016 -0.01198959</code></pre>
 <pre class="r"><code>check_statistical_significance(ci_gross_conversion)</code></pre>
@@ -489,7 +489,7 @@ ci_gross_conversion</code></pre>
 <pre class="r"><code>check_practical_significance(ci_gross_conversion, 0.01)</code></pre>
 <pre><code>## [1] TRUE</code></pre>
 <p><strong>Net conversion</strong></p>
-<pre class="r"><code>ci_net_conversion &lt;- ci_effective_size(data_control_filtered[&#39;Payments&#39;], data_control_filtered[&#39;Clicks&#39;], data_experiment_filtered[&#39;Payments&#39;], data_experiment_filtered[&#39;Clicks&#39;])
+<pre class="r"><code>ci_net_conversion &lt;- ci_effective_size(data_control_filtered$Payments, data_control_filtered$Clicks, data_experiment_filtered$Payments, data_experiment_filtered$Clicks)
 ci_net_conversion</code></pre>
 <pre><code>## [1] -0.011604186  0.001856741</code></pre>
 <pre class="r"><code>check_statistical_significance(ci_net_conversion)</code></pre>
@@ -540,7 +540,7 @@ ci_net_conversion</code></pre>
 #   var_experiment_demoninator: A dataframe column containing the experiment group data denominator
 # Returns: Sign test result
 sign.test &lt;- function(var_control_numerator, var_control_denominator, var_experiment_numerator, var_experiment_demoninator) {
-  n_total &lt;- nrow(var_control_numerator)
+  n_total &lt;- length(var_control_numerator)
   n_success &lt;- sum(var_experiment_numerator/var_experiment_demoninator &gt; var_control_numerator/var_control_denominator)
   return(binom.test(n_success, n_total)$p.value)
 }
@@ -553,13 +553,13 @@ check_statistical_significance_wtih_p_value &lt;- function(p_value, n_tails=2, a
   return(p_value&lt;alpha/n_tails)
 }</code></pre>
 <p><strong>Gross conversion</strong></p>
-<pre class="r"><code>p_value_gross_conversion &lt;- sign.test(data_control_filtered[&#39;Enrollments&#39;], data_control_filtered[&#39;Clicks&#39;], data_experiment_filtered[&#39;Enrollments&#39;], data_experiment_filtered[&#39;Clicks&#39;])
+<pre class="r"><code>p_value_gross_conversion &lt;- sign.test(data_control_filtered$Enrollments, data_control_filtered$Clicks, data_experiment_filtered$Enrollments, data_experiment_filtered$Clicks)
 p_value_gross_conversion</code></pre>
 <pre><code>## [1] 0.002599478</code></pre>
 <pre class="r"><code>check_statistical_significance_wtih_p_value(p_value_gross_conversion)</code></pre>
 <pre><code>## [1] TRUE</code></pre>
 <p><strong>Net conversion</strong></p>
-<pre class="r"><code>p_value_net_conversion &lt;- sign.test(data_control_filtered[&#39;Payments&#39;], data_control_filtered[&#39;Clicks&#39;], data_experiment_filtered[&#39;Payments&#39;], data_experiment_filtered[&#39;Clicks&#39;])
+<pre class="r"><code>p_value_net_conversion &lt;- sign.test(data_control_filtered$Payments, data_control_filtered$Clicks, data_experiment_filtered$Payments, data_experiment_filtered$Clicks)
 p_value_net_conversion</code></pre>
 <pre><code>## [1] 0.6776395</code></pre>
 <pre class="r"><code>check_statistical_significance_wtih_p_value(p_value_net_conversion)</code></pre>

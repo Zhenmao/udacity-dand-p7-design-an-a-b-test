@@ -249,11 +249,11 @@ pass_sanity_check <- function(observed, ci) {
 **Number of cookies**
 
 ```{r}
-observed_n_cookies <- observed_counts_fraction(data_control['Pageviews'], data_experiment['Pageviews'])
+observed_n_cookies <- observed_counts_fraction(data_control$Pageviews, data_experiment$Pageviews)
 observed_n_cookies
 ```
 ```{r}
-ci_n_cookies <- ci_counts_fraction(data_control['Pageviews'], data_experiment['Pageviews'])
+ci_n_cookies <- ci_counts_fraction(data_control$Pageviews, data_experiment$Pageviews)
 ci_n_cookies
 ```
 ```{r}
@@ -262,11 +262,11 @@ pass_sanity_check(observed_n_cookies, ci_n_cookies)
 
 **Number of clicks**
 ```{r}
-observed_n_clicks <- observed_counts_fraction(data_control['Clicks'], data_experiment['Clicks'])
+observed_n_clicks <- observed_counts_fraction(data_control$Clicks, data_experiment$Clicks)
 observed_n_clicks
 ```
 ```{r}
-ci_n_clicks <- ci_counts_fraction(data_control['Clicks'], data_experiment['Clicks'])
+ci_n_clicks <- ci_counts_fraction(data_control$Clicks, data_experiment$Clicks)
 ci_n_clicks
 ```
 ```{r}
@@ -276,11 +276,11 @@ pass_sanity_check(observed_n_clicks, ci_n_clicks)
 **Click-through-probability**
 
 ```{r}
-observed_click_through_probability <- observed_proportion_difference(data_control['Clicks'], data_control['Pageviews'], data_experiment['Clicks'], data_experiment['Pageviews'])
+observed_click_through_probability <- observed_proportion_difference(data_control$Clicks, data_control$Pageviews, data_experiment$Clicks, data_experiment$Pageviews)
 observed_click_through_probability
 ```
 ```{r}
-ci_click_through_probability <- ci_proportion_difference(data_control['Clicks'], data_control['Pageviews'], data_experiment['Clicks'], data_experiment['Pageviews'])
+ci_click_through_probability <- ci_proportion_difference(data_control$Clicks, data_control$Pageviews, data_experiment$Clicks, data_experiment$Pageviews)
 ci_click_through_probability
 ```
 ```{r}
@@ -339,7 +339,7 @@ data_experiment_filtered <- na.omit(data_experiment)
 **Gross conversion**
 
 ```{r}
-ci_gross_conversion <- ci_effective_size(data_control_filtered['Enrollments'], data_control_filtered['Clicks'], data_experiment_filtered['Enrollments'], data_experiment_filtered['Clicks'])
+ci_gross_conversion <- ci_effective_size(data_control_filtered$Enrollments, data_control_filtered$Clicks, data_experiment_filtered$Enrollments, data_experiment_filtered$Clicks)
 ci_gross_conversion
 ```
 ```{r}
@@ -352,7 +352,7 @@ check_practical_significance(ci_gross_conversion, 0.01)
 **Net conversion**
 
 ```{r}
-ci_net_conversion <- ci_effective_size(data_control_filtered['Payments'], data_control_filtered['Clicks'], data_experiment_filtered['Payments'], data_experiment_filtered['Clicks'])
+ci_net_conversion <- ci_effective_size(data_control_filtered$Payments, data_control_filtered$Clicks, data_experiment_filtered$Payments, data_experiment_filtered$Clicks)
 ci_net_conversion
 ```
 ```{r}
@@ -377,7 +377,7 @@ check_practical_significance(ci_net_conversion, 0.0075)
 #   var_experiment_demoninator: A dataframe column containing the experiment group data denominator
 # Returns: Sign test result
 sign.test <- function(var_control_numerator, var_control_denominator, var_experiment_numerator, var_experiment_demoninator) {
-  n_total <- nrow(var_control_numerator)
+  n_total <- length(var_control_numerator)
   n_success <- sum(var_experiment_numerator/var_experiment_demoninator > var_control_numerator/var_control_denominator)
   return(binom.test(n_success, n_total)$p.value)
 }
@@ -393,7 +393,7 @@ check_statistical_significance_wtih_p_value <- function(p_value, n_tails=2, alph
 
 **Gross conversion**
 ```{r}
-p_value_gross_conversion <- sign.test(data_control_filtered['Enrollments'], data_control_filtered['Clicks'], data_experiment_filtered['Enrollments'], data_experiment_filtered['Clicks'])
+p_value_gross_conversion <- sign.test(data_control_filtered$Enrollments, data_control_filtered$Clicks, data_experiment_filtered$Enrollments, data_experiment_filtered$Clicks)
 p_value_gross_conversion
 ```
 ```{r}
@@ -403,7 +403,7 @@ check_statistical_significance_wtih_p_value(p_value_gross_conversion)
 
 **Net conversion**
 ```{r}
-p_value_net_conversion <- sign.test(data_control_filtered['Payments'], data_control_filtered['Clicks'], data_experiment_filtered['Payments'], data_experiment_filtered['Clicks'])
+p_value_net_conversion <- sign.test(data_control_filtered$Payments, data_control_filtered$Clicks, data_experiment_filtered$Payments, data_experiment_filtered$Clicks)
 p_value_net_conversion
 ```
 ```{r}
@@ -425,3 +425,5 @@ I did not use the Bonferroni correction. The Bonferroni correction is useful to 
 Bonferroni correction is useful if I only require to meet ANY criteria in this experiment to launch the feature. Because I will launch the feature only when BOTH of the criteria are met, I do not need to use the Bonferroni correction.
 
 The effective size tests results agree with the sign tests results.
+
+
