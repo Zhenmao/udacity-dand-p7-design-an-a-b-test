@@ -137,6 +137,7 @@ $(document).ready(function () {
 <li><a href="#sign-tests"><span class="toc-section-number">3.2.2</span> Sign Tests</a></li>
 <li><a href="#summary"><span class="toc-section-number">3.2.3</span> Summary</a></li>
 </ul></li>
+<li><a href="#recommendation"><span class="toc-section-number">3.3</span> Recommendation</a></li>
 </ul></li>
 </ul>
 </div>
@@ -596,6 +597,13 @@ p_value_net_conversion</code></pre>
 <p>Bonferroni correction is useful if I only require to meet ANY criteria in this experiment to launch the feature. Because I will launch the feature only when BOTH of the criteria are met, I do not need to use the Bonferroni correction.</p>
 <p>The effective size tests results agree with the sign tests results.</p>
 </div>
+</div>
+<div id="recommendation" class="section level2">
+<h2><span class="header-section-number">3.3</span> Recommendation</h2>
+<p>I recommend not to launch the experiment.</p>
+<p>Our first criterion is met as our data shows that gross conversion of the experiment group is practically significantly lower than that of the control group.</p>
+<p>However, regarding our second criterion, the confidence interval of net conversion includes the negative practical significance boundary. This means it is possible that the net conversion might actually have decreased, and the second criterion is not met.</p>
+<p>I suggest dig deeper into the data, maybe by looking at some cohorts of each group, or figure out if there are other factors that might have impacted the experiment.</p>
 </div>
 </div>
 

@@ -426,4 +426,14 @@ Bonferroni correction is useful if I only require to meet ANY criteria in this e
 
 The effective size tests results agree with the sign tests results.
 
+## Recommendation
+
+I recommend not to launch the experiment.
+
+Our first criterion is met as our data shows that gross conversion of the experiment group is practically significantly lower than that of the control group.
+
+However, regarding our second criterion, the confidence interval of net conversion includes the negative practical significance boundary. This means it is possible that the net conversion might actually have decreased, and the second criterion is not met.
+
+I suggest dig deeper into the data, maybe by looking at some cohorts of each group, or figure out if there are other factors that might have impacted the experiment.
+
 
