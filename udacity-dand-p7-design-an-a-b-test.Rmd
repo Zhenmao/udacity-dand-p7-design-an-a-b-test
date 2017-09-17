@@ -436,4 +436,18 @@ However, regarding our second criterion, the confidence interval of net conversi
 
 I suggest dig deeper into the data, maybe by looking at some cohorts of each group, or figure out if there are other factors that might have impacted the experiment.
 
+# Follow-Up Experiment: How to Reduce Early Cancellations
 
+I would like to suggest a follow up experiment, in which once students start free trial, the system will send the student a daily reminder email with title saying “You’ve been continuously studying for your X nanodegree for Y days. Keep being udacious and keep learning everyday.” To prevent the day number rolling back to zero, students have to come back to watch at least one lecture video or finish at least one quiz every day.
+
+The hypothesis is that by utilizing the popular “Don’t break the chain” technique to motivate students to form a daily study habit, students are more likely to spend more time studying and feel more motivated. A motivated student is less likely to cancel his/her free trial and drop out, therefore he/she becomes a paid user eventually.
+
+Invariant metrics:
+
+Number of user-ids: The number of users who enroll in the free trial should be comparable between the experiment and the control group.
+
+Evaluation metrics:
+
+Retention: The number of user-ids to remain enrolled past the 14-day boundary (and thus make at least one payment) divided by number of user-ids to start the free trial. If the reminder email is working, students in the experiment group is less likely to cancel. We would expect the retention of the experiment group is higher than that of the control group.
+
+Unit of diversion: user-id. Because the reminder email needs to be associated with and sent to a specific user-id.
